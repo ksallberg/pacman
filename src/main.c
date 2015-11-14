@@ -18,15 +18,19 @@ void clear_scene() {
 }
 
 void test() {
-  printf(ANSI_COLOR_YELLOW
-         "╔══════════════╗        ╔══╗\n"
-         ANSI_COLOR_RESET);
-  printf(ANSI_COLOR_RED
-         "║              ╠════════╣  ║\n"
-         ANSI_COLOR_RESET);
-  printf(ANSI_COLOR_GREEN
-         "╚══════════════╝        ╚══╝\n"
-         ANSI_COLOR_RESET);
+  const char *m[] = {"╔══════════════╗        ╔══╗",
+                     "║              ╠════════╣  ║",
+                     "╚══════════════╝        ╚══╝",
+                     "                            ",
+                     "       ╔══════════════╗     ",
+                     "       ║              ║     ",
+                     "       ╚══════════════╝     "
+                    };
+
+  int i;
+  for(i = 0; i <= 6; i ++) {
+    printf("%s\n", m[i]);
+  }
 }
 
 void draw_scene() {
