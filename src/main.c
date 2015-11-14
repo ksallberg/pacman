@@ -16,6 +16,12 @@ void clear_scene() {
   printf("\e[1;1H\e[2J");
 }
 
+void test() {
+  printf("╔══════════════╗        ╔══╗\n");
+  printf("║              ╠════════╣  ║\n");
+  printf("╚══════════════╝        ╚══╝\n");
+}
+
 void draw_scene() {
   int i, j = 0;
 
@@ -51,6 +57,7 @@ int main() {
 
     clear_scene();
     draw_scene();
+    test();
   }
 
   return 0;
