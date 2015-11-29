@@ -150,7 +150,6 @@ int main() {
 
     clear_scene();
     draw_scene();
-    //    test();
   }
 
   return 0;
