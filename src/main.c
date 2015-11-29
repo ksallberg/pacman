@@ -147,7 +147,6 @@ int main() {
       break;
     }
     usleep(100000);
-
     clear_scene();
     draw_scene();
   }
