@@ -74,6 +74,13 @@ void test() {
   }
 }
 
+void move_ghosts() {
+  int i = 0;
+  for(i = 0; i < ghost_count; i++) {
+    ghosts[i].x += 1;
+  }
+}
+
 void draw_scene() {
   int i, j, x = 0;
   int ghost_printed = 0;
@@ -111,6 +118,8 @@ void draw_scene() {
     pacman.x ++;
     pacman.y ++;
   }
+
+  move_ghosts();
 }
 
 int main() {
