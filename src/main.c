@@ -1,5 +1,7 @@
 #include<stdio.h>
 #include<unistd.h>
+#include<ncurses.h>
+#include<pthread.h>
 
 const int width       = 19;
 const int height      = 19;
@@ -12,25 +14,8 @@ const int ghost_count = 4;
 #define ANSI_COLOR_YELLOW "\x1b[0;93m"
 #define ANSI_COLOR_RESET  "\x1b[0m"
 
-/* char *m[] = {"         █         ", */
-/*              " ███ ███ █ ███ ███ ", */
-/*              "                   ", */
-/*              " ███ █ █████ █ ███ ", */
-/*              "     █   █   █     ", */
-/*              "████ ███ █ ███ ████", */
-/*              "████ █       █ ████", */
-/*              "████ █ ██ ██ █ ████", */
-/*              "       █   █       ", */
-/*              "████ █ █████ █ ████", */
-/*              "████ █       █ ████", */
-/*              "████ █ █████ █ ████", */
-/*              "         █         ", */
-/*              " ███ ███ █ ███ ███ ", */
-/*              "   █           █   ", */
-/*              "██ █ █ █████ █ █ ██", */
-/*              "     █   █   █     ", */
-/*              " ███████ █ ███████ ", */
-/*              "                   "}; */
+int run;
+extern int run;
 
 char *m[] = {"         |         ",
              " ||| ||| | ||| ||| ",
@@ -109,22 +94,62 @@ void draw_scene() {
         ghost_printed = 0;
       }
     }
-    printf("\n");
-  }
-
-  if(pacman.x == height - 1) {
-    pacman.x = pacman.y = 0;
-  } else {
-    pacman.x ++;
-    pacman.y ++;
+    printf("\n\r");
   }
 
   move_ghosts();
 }
 
+/* Function that will be executed in the thread. */
+void *keyboard_runner(void *void_ptr) {
+
+  int ch;
+
+  while(run!=0) {
+    ch = getch(); // Read keyboard
+    switch(ch) {
+      case 258:
+        pacman.y ++;
+        break;
+      case 259:
+        pacman.y --;
+        break;
+      case 260:
+        pacman.x --;
+        break;
+      case 261:
+        pacman.x ++;
+        break;
+      case 113:
+        run = 0;
+        break;
+      default:
+        run = ch;
+    }
+  }
+
+  return NULL;
+}
+
 int main() {
 
   int round = 0;
+  pthread_t keyb_thread;
+
+  run = 1;
+
+  // Curses init
+  initscr();
+  raw();
+  keypad(stdscr, TRUE);
+  noecho();
+
+  // Fork off a thread of execution for reading the
+  // player's keyboard controls
+  if(pthread_create(&keyb_thread, NULL, keyboard_runner, NULL)) {
+    fprintf(stderr, "Error creating thread\n");
+    return 1;
+  }
 
   pacman.x = 0;
   pacman.y = 0;
@@ -150,8 +175,7 @@ int main() {
   ghosts[3].state = 1;
   ghosts[3].color = ANSI_COLOR_BLUE;
 
-  for(;;) {
-
+  while(run!=0) {
     if(++round >= 1000) {
       break;
     }
@@ -159,6 +183,16 @@ int main() {
     clear_scene();
     draw_scene();
   }
+
+  // Join thread / wait for it to close.
+  if(pthread_join(keyb_thread, NULL)) {
+    fprintf(stderr, "Error joining thread\n");
+    return 2;
+  }
+
+  // Curses destroy
+  refresh();
+  endwin();
 
   return 0;
 }
