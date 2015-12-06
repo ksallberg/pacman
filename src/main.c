@@ -103,28 +103,35 @@ void draw_scene() {
 /* Function that will be executed in the thread. */
 void *keyboard_runner(void *void_ptr) {
 
-  int ch;
+  int ch, new_x, new_y;
 
   while(run!=0) {
+    new_x = pacman.x;
+    new_y = pacman.y;
     ch = getch(); // Read keyboard
     switch(ch) {
       case 258:
-        pacman.y ++;
+        new_y = pacman.y + 1;
         break;
       case 259:
-        pacman.y --;
+        new_y = pacman.y - 1;
         break;
       case 260:
-        pacman.x --;
+        new_x = pacman.x - 1;
         break;
       case 261:
-        pacman.x ++;
+        new_x = pacman.x + 1;
         break;
       case 113:
         run = 0;
         break;
       default:
         run = ch;
+    }
+
+    if(m[new_y][new_x] == ' ') {
+      pacman.x = new_x;
+      pacman.y = new_y;
     }
   }
 
