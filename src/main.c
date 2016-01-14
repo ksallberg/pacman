@@ -1,7 +1,9 @@
-#include<stdio.h>
-#include<unistd.h>
 #include<ncurses.h>
 #include<pthread.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+#include<unistd.h>
 
 const int width       = 19;
 const int height      = 19;
@@ -60,9 +62,11 @@ void test() {
 }
 
 void move_ghosts() {
-  int i = 0;
+  int i    = 0;
+  srand(time(NULL));
   for(i = 0; i < ghost_count; i++) {
-    ghosts[i].x += 1;
+    ghosts[i].x = rand() % width;
+    ghosts[i].y = rand() % height;
   }
 }
 
