@@ -4,6 +4,7 @@
 #include<stdlib.h>
 #include<time.h>
 #include<unistd.h>
+#include"queue.h"
 
 const int width       = 19;
 const int height      = 19;
@@ -142,6 +143,17 @@ void *keyboard_runner(void *void_ptr) {
   return NULL;
 }
 
+void test_queue() {
+  Queue *x;
+  int c = 0;
+
+  x = q_create();
+  q_add(x, 23);
+  c = (int) q_remove(x);
+
+  printf("Hmm: %d\n", c);
+}
+
 int main() {
 
   int round = 0;
@@ -204,6 +216,8 @@ int main() {
   // Curses destroy
   refresh();
   endwin();
+
+  test_queue();
 
   return 0;
 }
