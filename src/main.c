@@ -50,7 +50,7 @@ struct Monster {
   int x;
   int y;
   int state; // 1 = hunting, 2 = fleeing, 3 = dead, 4 = pacman
-  int dir; // 1 = up, 2 = down, 3 = left, 4 = right
+  int dir; // 0 = down, 1 = up, 2 = left, 3 = right
 };
 
 struct Monster pacman;
@@ -69,11 +69,60 @@ void test() {
 }
 
 void move_ghosts() {
-  int i    = 0;
+  int i = 0;
+  int new_x = 0;
+  int new_y = 0;
   srand(time(NULL));
   for(i = 0; i < ghost_count; i++) {
-    ghosts[i].x = rand() % width;
-    ghosts[i].y = rand() % height;
+
+    new_x = ghosts[i].x;
+    new_y = ghosts[i].y;
+
+    switch(ghosts[i].dir) {
+      case 0:
+        new_y = ghosts[i].y + 1;
+        break;
+      case 1:
+        new_y = ghosts[i].y - 1;
+        break;
+      case 2:
+        new_x = ghosts[i].x - 1;
+        break;
+      case 3:
+        new_x = ghosts[i].x + 1;
+        break;
+    }
+
+    if(new_x > width - 1) {
+      new_x = 0;
+    }
+
+    if(new_x < 0) {
+      new_x = width - 1;
+    }
+
+    if(new_y < 0) {
+      new_y = height - 1;
+    }
+
+    if(new_y > height - 1) {
+      new_y = 0;
+    }
+
+    // Ghost is stuck
+    if(ghosts[i].x == new_x && ghosts[i].y == new_y) {
+
+      ghosts[i].dir = rand() % 4;
+
+    } else if(m[new_y][new_x] == ' ') {
+
+      ghosts[i].x = new_x;
+      ghosts[i].y = new_y;
+
+    } else {
+
+      ghosts[i].dir = rand() % 4;
+    }
   }
 }
 
@@ -233,21 +282,25 @@ int main() {
   ghosts[0].y = 10;
   ghosts[0].state = 1;
   ghosts[0].color = ANSI_COLOR_RED;
+  ghosts[0].dir = 0;
 
   ghosts[1].x = 4;
   ghosts[1].y = 5;
   ghosts[1].state = 1;
   ghosts[1].color = ANSI_COLOR_CYAN;
+  ghosts[1].dir = 0;
 
   ghosts[2].x = 7;
   ghosts[2].y = 6;
   ghosts[2].state = 1;
   ghosts[2].color = ANSI_COLOR_GREEN;
+  ghosts[2].dir = 0;
 
   ghosts[3].x = 10;
   ghosts[3].y = 4;
   ghosts[3].state = 1;
   ghosts[3].color = ANSI_COLOR_BLUE;
+  ghosts[3].dir = 0;
 
   while(run!=0) {
     if(++round >= 1000) {
