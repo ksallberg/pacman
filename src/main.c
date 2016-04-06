@@ -20,6 +20,9 @@ const int ghost_count = 4;
 int run;
 extern int run;
 
+int points;
+extern int points;
+
 char *m[] = {"         |         ",
              " ||| ||| | ||| ||| ",
              "                   ",
@@ -39,6 +42,8 @@ char *m[] = {"         |         ",
              "     |   |   |     ",
              " ||||||| | ||||||| ",
              "                   "};
+
+int food[19][19];
 
 struct Monster {
   char* color;
@@ -93,8 +98,12 @@ void draw_scene() {
           }
         }
         if(ghost_printed == 0) {
-          char str = m[i][j];
-          printf("%c", str);
+          if (food[j][i] == 1) {
+            printf(ANSI_COLOR_YELLOW "." ANSI_COLOR_RESET);
+          } else {
+            char str = m[i][j];
+            printf("%c", str);
+          }
         }
         ghost_printed = 0;
       }
@@ -138,6 +147,11 @@ void *keyboard_runner(void *void_ptr) {
       pacman.x = new_x;
       pacman.y = new_y;
     }
+
+    if(food[pacman.x][pacman.y] == 1) {
+      points ++;
+      food[pacman.x][pacman.y] = 0;
+    }
   }
 
   return NULL;
@@ -158,8 +172,27 @@ int main() {
 
   int round = 0;
   pthread_t keyb_thread;
+  int i, j = 0;
+
+  // Initialize food
+  for(i = 0; i < width; i ++) {
+    for(j = 0; j < height; j ++) {
+      food[i][j] = 0;
+    }
+  }
+  food[0][2] = 1;
+  food[0][4] = 1;
+
+  for(i=1; i < 16; i ++) {
+    food[4][i] = 1;
+  }
+
+  for(i=1; i < 16; i ++) {
+    food[14][i] = 1;
+  }
 
   run = 1;
+  points = 0;
 
   // Curses init
   initscr();
@@ -218,6 +251,7 @@ int main() {
   endwin();
 
   test_queue();
+  printf("Score: %d\n", points);
 
   return 0;
 }
