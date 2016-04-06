@@ -50,6 +50,7 @@ struct Monster {
   int x;
   int y;
   int state; // 1 = hunting, 2 = fleeing, 3 = dead, 4 = pacman
+  int dir; // 1 = up, 2 = down, 3 = left, 4 = right
 };
 
 struct Monster pacman;
@@ -112,6 +113,7 @@ void draw_scene() {
   }
 
   move_ghosts();
+  printf("Score: %d\n", points);
 }
 
 /* Function that will be executed in the thread. */
@@ -141,6 +143,22 @@ void *keyboard_runner(void *void_ptr) {
         break;
       default:
         run = ch;
+    }
+
+    if(new_x > width - 1) {
+      new_x = 0;
+    }
+
+    if(new_x < 0) {
+      new_x = width - 1;
+    }
+
+    if(new_y < 0) {
+      new_y = height - 1;
+    }
+
+    if(new_y > height - 1) {
+      new_y = 0;
     }
 
     if(m[new_y][new_x] == ' ') {
