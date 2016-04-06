@@ -41,7 +41,7 @@ char *m[] = {"         |         ",
              "|| | | ||||| | | ||",
              "     |   |   |     ",
              " ||||||| | ||||||| ",
-             "                   "};
+             "         |         "};
 
 int food[19][19];
 
@@ -307,8 +307,15 @@ int main() {
       break;
     }
     usleep(100000);
+
     clear_scene();
     draw_scene();
+
+    for(i=0; i < 4; i ++) {
+      if(ghosts[i].x == pacman.x && ghosts[i].y == pacman.y) {
+        return;
+      }
+    }
   }
 
   // Join thread / wait for it to close.
