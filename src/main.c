@@ -50,6 +50,9 @@ extern int run;
 int points;
 extern int points;
 
+int game_state;
+extern int game_state;
+
 char *m[] = {"         |         ",
              " ||| ||| | ||| ||| ",
              "                   ",
@@ -164,7 +167,11 @@ void draw_scene() {
       } else {
         for(x = 0; x < ghost_count; x++) {
           if(j == ghosts[x].x && i == ghosts[x].y) {
-            printf("%s", ghosts[x].color);
+            if(game_state == 2) {
+              printf("%s", ANSI_COLOR_CYAN);
+            } else if(game_state == 1) {
+              printf("%s", ghosts[x].color);
+            }
             printf("m" ANSI_COLOR_RESET);
             ghost_printed = 1;
             /* Print only one ghost, if several
@@ -286,6 +293,8 @@ int main() {
 
   run = 1;
   points = 0;
+  game_state = 1; // state 1 = ghosts chasing
+                  // state 2 = ghosts fleeing
 
   // Curses init
   initscr();
@@ -333,24 +342,23 @@ int main() {
     if(++round >= 1000) {
       break;
     }
+
+    if(round >= 20) {
+      game_state = 2;
+    }
+
     usleep(100000);
 
     clear_scene();
     draw_scene();
 
     for(i=0; i < 4; i ++) {
-      if(ghosts[i].x == pacman.x && ghosts[i].y == pacman.y) {
+      if((ghosts[i].x == pacman.x && ghosts[i].y == pacman.y) || points == 32) {
         run = 0;
         break;
       }
     }
   }
-
-  // Join thread / wait for it to close.
-  /* if(pthread_join(keyb_thread, NULL)) { */
-  /*   fprintf(stderr, "Error joining thread\n"); */
-  /*   return 2; */
-  /* } */
 
   test_queue();
   clear_scene();
@@ -360,8 +368,6 @@ int main() {
   endwin();
 
   printf("Score: %d\n", points);
-
-  /* pthread_exit(NULL); */
 
   return 0;
 }
