@@ -1,3 +1,30 @@
+/*
+Copyright (c) 2014-2016, Kristian Sällberg
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #include<ncurses.h>
 #include<pthread.h>
 #include<stdio.h>
@@ -171,6 +198,7 @@ void *keyboard_runner(void *void_ptr) {
   int ch, new_x, new_y;
 
   while(run!=0) {
+
     new_x = pacman.x;
     new_y = pacman.y;
     ch = getch(); // Read keyboard
@@ -231,8 +259,6 @@ void test_queue() {
   x = q_create();
   q_add(x, 23);
   c = (int) q_remove(x);
-
-  printf("Hmm: %d\n", c);
 }
 
 int main() {
@@ -303,6 +329,7 @@ int main() {
   ghosts[3].dir = 0;
 
   while(run!=0) {
+
     if(++round >= 1000) {
       break;
     }
@@ -313,23 +340,28 @@ int main() {
 
     for(i=0; i < 4; i ++) {
       if(ghosts[i].x == pacman.x && ghosts[i].y == pacman.y) {
-        return;
+        run = 0;
+        break;
       }
     }
   }
 
   // Join thread / wait for it to close.
-  if(pthread_join(keyb_thread, NULL)) {
-    fprintf(stderr, "Error joining thread\n");
-    return 2;
-  }
+  /* if(pthread_join(keyb_thread, NULL)) { */
+  /*   fprintf(stderr, "Error joining thread\n"); */
+  /*   return 2; */
+  /* } */
+
+  test_queue();
+  clear_scene();
 
   // Curses destroy
   refresh();
   endwin();
 
-  test_queue();
   printf("Score: %d\n", points);
+
+  /* pthread_exit(NULL); */
 
   return 0;
 }
