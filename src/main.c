@@ -33,13 +33,14 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include<unistd.h>
 #include"queue.h"
 
-const int width       = 19;
-const int height      = 19;
-const int ghost_count = 4;
+const int width           = 19;
+const int height          = 19;
+const int ghost_count     = 4;
+const int ghost_flee_time = 20;
 
 #define ANSI_COLOR_RED    "\x1b[31m"
 #define ANSI_COLOR_GREEN  "\x1b[32m"
-#define ANSI_COLOR_BLUE   "\x1b[34m"
+#define ANSI_COLOR_PINK   "\x1b[35m"
 #define ANSI_COLOR_CYAN   "\x1b[36m"
 #define ANSI_COLOR_YELLOW "\x1b[0;93m"
 #define ANSI_COLOR_RESET  "\x1b[0m"
@@ -52,6 +53,12 @@ extern int points;
 
 int game_state;
 extern int game_state;
+
+int round_at_apple;
+extern int round_at_apple;
+
+int round;
+extern int round;
 
 char *m[] = {"         |         ",
              " ||| ||| | ||| ||| ",
@@ -91,7 +98,6 @@ void clear_scene() {
 }
 
 void test() {
-
   int i = 0;
   for(; i < 19; i ++) {
     printf("%s\n", m[i]);
@@ -163,19 +169,19 @@ void draw_scene() {
   for(i = 0; i < height; i ++) {
     for(j = 0; j < width; j ++) {
       if(j == pacman.x && i == pacman.y) {
-        printf(ANSI_COLOR_YELLOW "c" ANSI_COLOR_RESET);
+        printf(ANSI_COLOR_YELLOW "ᗧ" ANSI_COLOR_RESET);
       } else {
         for(x = 0; x < ghost_count; x++) {
           if(j == ghosts[x].x && i == ghosts[x].y) {
             if(game_state == 2 &&
                ghosts[x].state == 1) {
               printf("%s", ANSI_COLOR_CYAN);
-              printf("m" ANSI_COLOR_RESET);
+              printf("ᗣ" ANSI_COLOR_RESET);
               ghost_printed = 1;
             } else if(game_state == 1 &&
                       ghosts[x].state == 1) {
               printf("%s", ghosts[x].color);
-              printf("m" ANSI_COLOR_RESET);
+              printf("ᗣ" ANSI_COLOR_RESET);
               ghost_printed = 1;
             }
             /* Print only one ghost, if several
@@ -189,7 +195,7 @@ void draw_scene() {
           if (food[j][i] == 1) {
             printf(ANSI_COLOR_YELLOW "." ANSI_COLOR_RESET);
           } else if (food[j][i] == 2) {
-            printf(ANSI_COLOR_RED "o" ANSI_COLOR_RESET);
+            printf(ANSI_COLOR_YELLOW "•" ANSI_COLOR_RESET);
           } else {
             char str = m[i][j];
             printf("%c", str);
@@ -264,6 +270,7 @@ void *keyboard_runner(void *void_ptr) {
     if(food[pacman.x][pacman.y] == 2) {
       food[pacman.x][pacman.y] = 0;
       game_state = 2;
+      round_at_apple = round;
     }
   }
 
@@ -281,7 +288,7 @@ void test_queue() {
 
 int main() {
 
-  int round = 0;
+  round = 0;
   pthread_t keyb_thread;
   int i, j = 0;
 
@@ -304,7 +311,8 @@ int main() {
   }
 
   // Initialize apples (game state changer)
-  food[0][0] = 2;
+  food[2][12] = 2;
+  food[16][12] = 2;
 
   run = 1;
   points = 0;
@@ -349,13 +357,14 @@ int main() {
   ghosts[3].x = 10;
   ghosts[3].y = 4;
   ghosts[3].state = 1;
-  ghosts[3].color = ANSI_COLOR_BLUE;
+  ghosts[3].color = ANSI_COLOR_PINK;
   ghosts[3].dir = 0;
 
   while(run!=0) {
 
-    if(++round >= 1000) {
-      break;
+    // Make ghosts dangerous again.
+    if(round_at_apple == round - ghost_flee_time) {
+      game_state = 1;
     }
 
     usleep(100000);
@@ -383,6 +392,8 @@ int main() {
         break;
       }
     }
+
+    round ++;
   }
 
   test_queue();
