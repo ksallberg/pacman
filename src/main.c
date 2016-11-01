@@ -80,7 +80,7 @@ struct Monster {
   int x;
   int y;
   int state; // 1 = hunting, 2 = fleeing, 3 = dead, 4 = pacman
-  int dir; // 0 = down, 1 = up, 2 = left, 3 = right
+  int dir;   // 0 = down,    1 = up,      2 = left, 3 = right
 };
 
 struct Monster pacman;
@@ -167,13 +167,17 @@ void draw_scene() {
       } else {
         for(x = 0; x < ghost_count; x++) {
           if(j == ghosts[x].x && i == ghosts[x].y) {
-            if(game_state == 2) {
+            if(game_state == 2 &&
+               ghosts[x].state == 1) {
               printf("%s", ANSI_COLOR_CYAN);
-            } else if(game_state == 1) {
+              printf("m" ANSI_COLOR_RESET);
+              ghost_printed = 1;
+            } else if(game_state == 1 &&
+                      ghosts[x].state == 1) {
               printf("%s", ghosts[x].color);
+              printf("m" ANSI_COLOR_RESET);
+              ghost_printed = 1;
             }
-            printf("m" ANSI_COLOR_RESET);
-            ghost_printed = 1;
             /* Print only one ghost, if several
              * ghosts are located in the same cell,
              * then print the first and skip the rest.
@@ -184,6 +188,8 @@ void draw_scene() {
         if(ghost_printed == 0) {
           if (food[j][i] == 1) {
             printf(ANSI_COLOR_YELLOW "." ANSI_COLOR_RESET);
+          } else if (food[j][i] == 2) {
+            printf(ANSI_COLOR_RED "o" ANSI_COLOR_RESET);
           } else {
             char str = m[i][j];
             printf("%c", str);
@@ -254,6 +260,11 @@ void *keyboard_runner(void *void_ptr) {
       points ++;
       food[pacman.x][pacman.y] = 0;
     }
+
+    if(food[pacman.x][pacman.y] == 2) {
+      food[pacman.x][pacman.y] = 0;
+      game_state = 2;
+    }
   }
 
   return NULL;
@@ -280,6 +291,7 @@ int main() {
       food[i][j] = 0;
     }
   }
+
   food[0][2] = 1;
   food[0][4] = 1;
 
@@ -290,6 +302,9 @@ int main() {
   for(i=1; i < 16; i ++) {
     food[14][i] = 1;
   }
+
+  // Initialize apples (game state changer)
+  food[0][0] = 2;
 
   run = 1;
   points = 0;
@@ -343,17 +358,27 @@ int main() {
       break;
     }
 
-    if(round >= 20) {
-      game_state = 2;
-    }
-
     usleep(100000);
 
     clear_scene();
     draw_scene();
 
     for(i=0; i < 4; i ++) {
-      if((ghosts[i].x == pacman.x && ghosts[i].y == pacman.y) || points == 32) {
+      if(ghosts[i].x == pacman.x &&
+         ghosts[i].y == pacman.y &&
+         game_state == 1) {
+        run = 0;
+        break;
+      }
+
+      if(ghosts[i].x == pacman.x &&
+         ghosts[i].y == pacman.y &&
+         game_state == 2) {
+        ghosts[i].state = 2;
+      }
+
+      // quit if all food is eaten
+      if(points == 32) {
         run = 0;
         break;
       }
