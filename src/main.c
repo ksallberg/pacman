@@ -57,8 +57,8 @@ extern int game_state;
 int round_at_apple;
 extern int round_at_apple;
 
-int round;
-extern int round;
+int cur_round;
+extern int cur_round;
 
 char *m[] = {"         |         ",
              " ||| ||| | ||| ||| ",
@@ -270,27 +270,20 @@ void *keyboard_runner(void *void_ptr) {
     if(food[pacman.x][pacman.y] == 2) {
       food[pacman.x][pacman.y] = 0;
       game_state = 2;
-      round_at_apple = round;
+      round_at_apple = cur_round;
     }
   }
 
   return NULL;
 }
 
-void test_queue() {
+int main() {
+  pthread_t keyb_thread;
+  int i, j, c = 0;
   Queue *x;
-  int c = 0;
 
   x = q_create();
-  q_add(x, 23);
-  c = (int) q_remove(x);
-}
-
-int main() {
-
-  round = 0;
-  pthread_t keyb_thread;
-  int i, j = 0;
+  cur_round = 0;
 
   // Initialize food
   for(i = 0; i < width; i ++) {
@@ -363,11 +356,11 @@ int main() {
   while(run!=0) {
 
     // Make ghosts dangerous again.
-    if(round_at_apple == round - ghost_flee_time) {
+    if(round_at_apple == cur_round - ghost_flee_time) {
       game_state = 1;
     }
 
-    usleep(100000);
+    usleep(180000);
 
     clear_scene();
     draw_scene();
@@ -393,10 +386,10 @@ int main() {
       }
     }
 
-    round ++;
+    q_add(x, (int *) cur_round);
+    cur_round ++;
   }
 
-  test_queue();
   clear_scene();
 
   // Curses destroy
@@ -404,6 +397,11 @@ int main() {
   endwin();
 
   printf("Score: %d\n", points);
+
+  for(i = 0; i < cur_round; i ++) {
+    c = (int) get_at(x, i);
+    printf("At place: %d\n", c);
+  }
 
   return 0;
 }

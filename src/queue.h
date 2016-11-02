@@ -13,6 +13,10 @@ typedef void *Item;
  */
 Queue *q_create(void);
 /*
+ * remove one, add one
+ */
+int q_change(Queue *q, Item i);
+/*
  * add Item to the Queue; 3rd arg is priority in MIN_PRIO..MAX_PRIO;
  * return 1/0 if successful/not-successful
  */
@@ -21,5 +25,9 @@ int q_add(Queue *q, Item i);
  * remove next Item from queue; returns NULL if queue is empty
  */
 Item q_remove(Queue *q);
+
+Item get_at(Queue *q, int i);
+
+Item get_elem(Queue *q);
 
 #endif /* _QUEUE_INCLUDED */

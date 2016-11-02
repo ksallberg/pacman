@@ -16,6 +16,8 @@ struct queue {
   struct q_element *tail;
 };
 
+int queue_size = 0;
+
 /*
  * create a Queue that holds Items
  * returns NULL if the create call failed (malloc failure)
@@ -28,6 +30,19 @@ Queue *q_create(void) {
     p->tail = NULL;
   }
   return p;
+}
+
+/*
+ * In order to keep only a certain amount of items in the
+ * queue at any one time, remove one before adding if needed.
+ */
+int q_change(Queue *q, Item i) {
+  if(queue_size < 50) {
+    queue_size ++;
+  } else {
+    q_remove(q);
+  }
+  return q_add(q, i);
 }
 
 /*
@@ -69,5 +84,36 @@ Item q_remove(Queue *q) {
   }
   i = p->value;
   free(p);
+  return i;
+}
+
+Item get_at(Queue *q, int i) {
+  struct q_element *p;
+  Item item;
+  int start;
+
+  if (q->head == NULL) {
+    return NULL;
+  }
+  p = q->head;
+
+  for(start = 0; start < i; start ++) {
+    p = p->next;
+  }
+
+  item = p->value;
+  return item;
+}
+
+Item get_elem(Queue *q) {
+  struct q_element *p;
+  Item i;
+
+  if (q->head == NULL) {
+    return NULL;
+  }
+  p = q->head;
+
+  i = p->value;
   return i;
 }
