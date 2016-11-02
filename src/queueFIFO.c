@@ -36,7 +36,7 @@ Queue *q_create(void) {
  * In order to keep only a certain amount of items in the
  * queue at any one time, remove one before adding if needed.
  */
-int q_change(Queue *q, Item i) {
+int q_shift(Queue *q, Item i) {
   if(queue_size < 50) {
     queue_size ++;
   } else {

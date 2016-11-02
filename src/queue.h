@@ -15,7 +15,7 @@ Queue *q_create(void);
 /*
  * remove one, add one
  */
-int q_change(Queue *q, Item i);
+int q_shift(Queue *q, Item i);
 /*
  * add Item to the Queue; 3rd arg is priority in MIN_PRIO..MAX_PRIO;
  * return 1/0 if successful/not-successful

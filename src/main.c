@@ -45,6 +45,7 @@ const int ghost_flee_time = 20;
 #define ANSI_COLOR_YELLOW "\x1b[0;93m"
 #define ANSI_COLOR_RESET  "\x1b[0m"
 
+#define MIN( a, b ) ( ( a > b) ? b : a )
 int run;
 extern int run;
 
@@ -386,7 +387,7 @@ int main() {
       }
     }
 
-    q_add(x, (int *) cur_round);
+    q_shift(x, (int *) cur_round);
     cur_round ++;
   }
 
@@ -398,9 +399,9 @@ int main() {
 
   printf("Score: %d\n", points);
 
-  for(i = 0; i < cur_round; i ++) {
+  for(i = 0; i < MIN(50, cur_round); i ++) {
     c = (int) get_at(x, i);
-    printf("At place: %d\n", c);
+    printf("At place %d: %d\n", i, c);
   }
 
   return 0;
