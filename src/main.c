@@ -25,13 +25,13 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include<ncurses.h>
-#include<pthread.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include<time.h>
-#include<unistd.h>
-#include"queue.h"
+#include <ncurses.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
+#include "queue.h"
 
 const int width           = 19;
 const int height          = 19;
@@ -44,8 +44,8 @@ const int ghost_flee_time = 20;
 #define ANSI_COLOR_CYAN   "\x1b[36m"
 #define ANSI_COLOR_YELLOW "\x1b[0;93m"
 #define ANSI_COLOR_RESET  "\x1b[0m"
+#define MIN(a, b) ((a > b) ? b : a)
 
-#define MIN( a, b ) ( ( a > b) ? b : a )
 int run;
 extern int run;
 
@@ -90,6 +90,13 @@ struct Monster {
   int state; // 1 = hunting, 2 = fleeing, 3 = dead, 4 = pacman
   int dir;   // 0 = down,    1 = up,      2 = left, 3 = right
 };
+
+struct Pos {
+  int x;
+  int y;
+};
+
+struct Pos pos;
 
 struct Monster pacman;
 struct Monster ghosts[4];
@@ -282,9 +289,13 @@ int main() {
   pthread_t keyb_thread;
   int i, j, c = 0;
   Queue *x;
+  struct Pos *p;
 
   x = q_create();
   cur_round = 0;
+
+  pos.x = 0;
+  pos.y = 0;
 
   // Initialize food
   for(i = 0; i < width; i ++) {
@@ -387,7 +398,12 @@ int main() {
       }
     }
 
-    q_shift(x, (int *) cur_round);
+    p = (struct Pos *) malloc(sizeof(struct Pos));
+    p->x = pacman.x;
+    p->y = pacman.y;
+
+    q_shift(x, p);
+
     cur_round ++;
   }
 
@@ -400,8 +416,10 @@ int main() {
   printf("Score: %d\n", points);
 
   for(i = 0; i < MIN(50, cur_round); i ++) {
-    c = (int) get_at(x, i);
-    printf("At place %d: %d\n", i, c);
+    p = get_at(x, i);
+    c = 4;
+    printf("Pacman pos at place %d: (%d, %d)\n", i, p->x, p->y);
+    free(p);
   }
 
   return 0;

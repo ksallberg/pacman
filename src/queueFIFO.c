@@ -19,7 +19,7 @@ struct queue {
 int queue_size = 0;
 
 /*
- * create a Queue that holds Items
+ * Create a Queue that holds Items.
  * returns NULL if the create call failed (malloc failure)
  */
 Queue *q_create(void) {
@@ -46,13 +46,13 @@ int q_shift(Queue *q, Item i) {
 }
 
 /*
- * add Item to the Queue; 3rd arg is priority in MIN_PRIO..MAX_PRIO;
+ * Add Item to the Queue; 3rd arg is priority in MIN_PRIO..MAX_PRIO;
  * return 1/0 if successful/not-successful
  */
 int q_add(Queue *q, Item i) {
   struct q_element *p;
 
-  p = (struct q_element *)malloc(sizeof(struct q_element));
+  p = (struct q_element *) malloc(sizeof(struct q_element));
   if (p != NULL) {
     p->value = i;
     p->next = NULL;
