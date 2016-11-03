@@ -16,8 +16,6 @@ struct queue {
   struct q_element *tail;
 };
 
-int queue_size = 0;
-
 /*
  * Create a Queue that holds Items.
  * returns NULL if the create call failed (malloc failure)
@@ -37,9 +35,7 @@ Queue *q_create(void) {
  * queue at any one time, remove one before adding if needed.
  */
 int q_shift(Queue *q, Item i) {
-  if(queue_size < 50) {
-    queue_size ++;
-  } else {
+  if(q_size(q) >= 50) {
     q_remove(q);
   }
   return q_add(q, i);
@@ -116,7 +112,33 @@ Item get_elem(Queue *q) {
     return NULL;
   }
   p = q->head;
-
   i = p->value;
+  return i;
+}
+
+Item get_last(Queue *q) {
+  struct q_element *p;
+  Item i;
+
+  if(q->tail == NULL) {
+    return NULL;
+  }
+  p = q->tail;
+  i = p->value;
+  return i;
+}
+
+int q_size(Queue *q) {
+  struct q_element *p;
+  int i = 0;
+
+  if(q->head == NULL) {
+    return i;
+  }
+  p = q->head;
+  while(p != NULL) {
+    i ++;
+    p = p->next;
+  }
   return i;
 }

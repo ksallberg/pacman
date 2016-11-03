@@ -114,32 +114,84 @@ void test() {
 
 struct Pos *next_stink(Queue *q, int x, int y) {
   struct Pos *p = NULL;
-  int i = 0;
+  int i = q_size(q);
 
-  while(1) {
-    p = get_at(q, i);
-    i++;
+  while(i > 0) {
+    p = get_at(q, i-1);
 
     if(p == NULL) {
       return NULL;
     }
 
     if(p->x == x && p->y == y) {
-      break;
+      p = get_at(q, i);
+      return p;
     }
+
+    i --;
   }
 
-  i ++;
+  return NULL;
+}
 
-  while(p->x == x && p->y == y) {
-    p = get_at(q, i);
-    i ++;
-    if(p == NULL) {
-      return NULL;
-    }
+void move_pacman() {
+  int new_x, new_y;
+
+  new_x = pacman.x;
+  new_y = pacman.y;
+
+  switch(pacman.dir) {
+  case 0:
+    // Down
+    new_y = pacman.y + 1;
+    break;
+  case 1:
+    // Up
+    new_y = pacman.y - 1;
+    break;
+  case 2:
+    // Left
+    new_x = pacman.x - 1;
+    break;
+  case 3:
+    // Right
+    new_x = pacman.x + 1;
+    break;
+  default:
+    return;
   }
 
-  return p;
+  if(new_x > width - 1) {
+    new_x = 0;
+  }
+
+  if(new_x < 0) {
+    new_x = width - 1;
+  }
+
+  if(new_y < 0) {
+    new_y = height - 1;
+  }
+
+  if(new_y > height - 1) {
+    new_y = 0;
+  }
+
+  if(m[new_y][new_x] == ' ') {
+    pacman.x = new_x;
+    pacman.y = new_y;
+  }
+
+  if(food[pacman.x][pacman.y] == 1) {
+    points ++;
+    food[pacman.x][pacman.y] = 0;
+  }
+
+  if(food[pacman.x][pacman.y] == 2) {
+    food[pacman.x][pacman.y] = 0;
+    game_state = 2;
+    round_at_apple = cur_round;
+  }
 }
 
 void move_ghosts(Queue *q) {
@@ -219,19 +271,19 @@ void draw_scene(Queue *q) {
   for(i = 0; i < height; i ++) {
     for(j = 0; j < width; j ++) {
       if(j == pacman.x && i == pacman.y) {
-        printf(ANSI_COLOR_YELLOW "ᗧ" ANSI_COLOR_RESET);
+        printf(ANSI_COLOR_YELLOW "C" ANSI_COLOR_RESET);
       } else {
         for(x = 0; x < ghost_count; x++) {
           if(j == ghosts[x].x && i == ghosts[x].y) {
             if(game_state == 2 &&
                ghosts[x].state == 1) {
               printf("%s", ANSI_COLOR_CYAN);
-              printf("ᗣ" ANSI_COLOR_RESET);
+              printf("M" ANSI_COLOR_RESET);
               ghost_printed = 1;
             } else if(game_state == 1 &&
                       ghosts[x].state == 1) {
               printf("%s", ghosts[x].color);
-              printf("ᗣ" ANSI_COLOR_RESET);
+              printf("M" ANSI_COLOR_RESET);
               ghost_printed = 1;
             }
             /* Print only one ghost, if several
@@ -257,6 +309,7 @@ void draw_scene(Queue *q) {
     printf("\n\r");
   }
 
+  move_pacman();
   move_ghosts(q);
   printf("Score: %d\n", points);
 }
@@ -264,63 +317,33 @@ void draw_scene(Queue *q) {
 /* Function that will be executed in the thread. */
 void *keyboard_runner(void *void_ptr) {
 
-  int ch, new_x, new_y;
+  int ch;
 
   while(run!=0) {
 
-    new_x = pacman.x;
-    new_y = pacman.y;
     ch = getch(); // Read keyboard
     switch(ch) {
       case 258:
-        new_y = pacman.y + 1;
+        // Down
+        pacman.dir = 0;
         break;
       case 259:
-        new_y = pacman.y - 1;
+        // Up
+        pacman.dir = 1;
         break;
       case 260:
-        new_x = pacman.x - 1;
+        // Left
+        pacman.dir = 2;
         break;
       case 261:
-        new_x = pacman.x + 1;
+        // Right
+        pacman.dir = 3;
         break;
       case 113:
         run = 0;
         break;
       default:
         run = ch;
-    }
-
-    if(new_x > width - 1) {
-      new_x = 0;
-    }
-
-    if(new_x < 0) {
-      new_x = width - 1;
-    }
-
-    if(new_y < 0) {
-      new_y = height - 1;
-    }
-
-    if(new_y > height - 1) {
-      new_y = 0;
-    }
-
-    if(m[new_y][new_x] == ' ') {
-      pacman.x = new_x;
-      pacman.y = new_y;
-    }
-
-    if(food[pacman.x][pacman.y] == 1) {
-      points ++;
-      food[pacman.x][pacman.y] = 0;
-    }
-
-    if(food[pacman.x][pacman.y] == 2) {
-      food[pacman.x][pacman.y] = 0;
-      game_state = 2;
-      round_at_apple = cur_round;
     }
   }
 
@@ -379,9 +402,10 @@ int main() {
     return 1;
   }
 
-  pacman.x = 0;
-  pacman.y = 0;
+  pacman.x     = 0;
+  pacman.y     = 0;
   pacman.state = 4;
+  pacman.dir   = 3; // start by going right
 
   ghosts[0].x = 10;
   ghosts[0].y = 10;
@@ -440,11 +464,21 @@ int main() {
       }
     }
 
+    struct Pos *last = get_last(x);
+
     p = (struct Pos *) malloc(sizeof(struct Pos));
     p->x = pacman.x;
     p->y = pacman.y;
 
-    q_shift(x, p);
+    if(last != NULL) {
+
+      if(last->x != pacman.x || last->y != pacman.y) {
+        q_shift(x, p);
+      }
+
+    } else {
+      q_shift(x, p);
+    }
 
     cur_round ++;
   }

@@ -30,4 +30,8 @@ Item get_at(Queue *q, int i);
 
 Item get_elem(Queue *q);
 
+Item get_last(Queue *q);
+
+int q_size(Queue *q);
+
 #endif /* _QUEUE_INCLUDED */
