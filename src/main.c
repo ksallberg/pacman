@@ -112,17 +112,53 @@ void test() {
   }
 }
 
-void move_ghosts() {
+struct Pos *next_stink(Queue *q, int x, int y) {
+  struct Pos *p = NULL;
+  int i = 0;
+
+  while(1) {
+    p = get_at(q, i);
+    i++;
+
+    if(p == NULL) {
+      return NULL;
+    }
+
+    if(p->x == x && p->y == y) {
+      break;
+    }
+  }
+
+  i ++;
+
+  while(p->x == x && p->y == y) {
+    p = get_at(q, i);
+    i ++;
+    if(p == NULL) {
+      return NULL;
+    }
+  }
+
+  return p;
+}
+
+void move_ghosts(Queue *q) {
   int i = 0;
   int new_x = 0;
   int new_y = 0;
   srand(time(NULL));
+
+  struct Pos *stink_pos;
+
   for(i = 0; i < ghost_count; i++) {
 
     new_x = ghosts[i].x;
     new_y = ghosts[i].y;
 
-    switch(ghosts[i].dir) {
+    stink_pos = next_stink(q, new_x, new_y);
+
+    if(stink_pos == NULL || game_state == 2) {
+      switch(ghosts[i].dir) {
       case 0:
         new_y = ghosts[i].y + 1;
         break;
@@ -135,42 +171,48 @@ void move_ghosts() {
       case 3:
         new_x = ghosts[i].x + 1;
         break;
-    }
+      }
 
-    if(new_x > width - 1) {
-      new_x = 0;
-    }
+      if(new_x > width - 1) {
+        new_x = 0;
+      }
 
-    if(new_x < 0) {
-      new_x = width - 1;
-    }
+      if(new_x < 0) {
+        new_x = width - 1;
+      }
 
-    if(new_y < 0) {
-      new_y = height - 1;
-    }
+      if(new_y < 0) {
+        new_y = height - 1;
+      }
 
-    if(new_y > height - 1) {
-      new_y = 0;
-    }
+      if(new_y > height - 1) {
+        new_y = 0;
+      }
 
-    // Ghost is stuck
-    if(ghosts[i].x == new_x && ghosts[i].y == new_y) {
+      // Ghost is stuck
+      if(ghosts[i].x == new_x && ghosts[i].y == new_y) {
 
-      ghosts[i].dir = rand() % 4;
+        ghosts[i].dir = rand() % 4;
 
-    } else if(m[new_y][new_x] == ' ') {
+      } else if(m[new_y][new_x] == ' ') {
 
-      ghosts[i].x = new_x;
-      ghosts[i].y = new_y;
+        ghosts[i].x = new_x;
+        ghosts[i].y = new_y;
+
+      } else {
+
+        ghosts[i].dir = rand() % 4;
+      }
 
     } else {
 
-      ghosts[i].dir = rand() % 4;
+      ghosts[i].x = stink_pos->x;
+      ghosts[i].y = stink_pos->y;
     }
   }
 }
 
-void draw_scene() {
+void draw_scene(Queue *q) {
   int i, j, x = 0;
   int ghost_printed = 0;
 
@@ -215,7 +257,7 @@ void draw_scene() {
     printf("\n\r");
   }
 
-  move_ghosts();
+  move_ghosts(q);
   printf("Score: %d\n", points);
 }
 
@@ -375,7 +417,7 @@ int main() {
     usleep(180000);
 
     clear_scene();
-    draw_scene();
+    draw_scene(x);
 
     for(i=0; i < 4; i ++) {
       if(ghosts[i].x == pacman.x &&
@@ -415,10 +457,9 @@ int main() {
 
   printf("Score: %d\n", points);
 
+  // Clean up
   for(i = 0; i < MIN(50, cur_round); i ++) {
     p = get_at(x, i);
-    c = 4;
-    printf("Pacman pos at place %d: (%d, %d)\n", i, p->x, p->y);
     free(p);
   }
 

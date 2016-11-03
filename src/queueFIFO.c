@@ -98,6 +98,9 @@ Item get_at(Queue *q, int i) {
   p = q->head;
 
   for(start = 0; start < i; start ++) {
+    if(p->next==NULL) {
+      return NULL;
+    }
     p = p->next;
   }
 
