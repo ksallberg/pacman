@@ -35,7 +35,7 @@ Queue *q_create(void) {
  * queue at any one time, remove one before adding if needed.
  */
 int q_shift(Queue *q, Item i) {
-  if(q_size(q) >= 50) {
+  if(q_size(q) >= 40) {
     q_remove(q);
   }
   return q_add(q, i);

@@ -438,7 +438,7 @@ int main() {
       game_state = 1;
     }
 
-    usleep(180000);
+    usleep(250000);
 
     clear_scene();
     draw_scene(x);
