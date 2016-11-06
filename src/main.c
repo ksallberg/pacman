@@ -44,7 +44,6 @@ const int ghost_flee_time = 20;
 #define ANSI_COLOR_CYAN   "\x1b[36m"
 #define ANSI_COLOR_YELLOW "\x1b[0;93m"
 #define ANSI_COLOR_RESET  "\x1b[0m"
-#define MIN(a, b) ((a > b) ? b : a)
 
 int run;
 extern int run;
