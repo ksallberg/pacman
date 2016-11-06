@@ -476,9 +476,9 @@ int main() {
       }
     }
 
-    usleep(250000);
     clear_scene();
     draw_scene(stink);
+    usleep(250000);
 
     struct Pos *last = l_get_last(stink);
 
