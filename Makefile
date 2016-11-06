@@ -1,7 +1,7 @@
 build:
-	gcc -c src/queueFIFO.c -o queue.o
-	gcc src/main.c -o bin/pacman queue.o -lncurses -lpthread
-	rm queue.o
+	gcc -c src/double_link.c -o list.o
+	gcc src/main.c -o bin/pacman list.o -lncurses -lpthread
+	rm list.o
 
 clean:
 	rm -f bin/pacman

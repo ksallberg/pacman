@@ -31,7 +31,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
-#include "queue.h"
+#include "list.h"
 
 const int width           = 19;
 const int height          = 19;
@@ -112,8 +112,8 @@ void test() {
   }
 }
 
-struct Pos *next_stink(Queue *q, int x, int y) {
-  struct q_element *elem = q->tail;
+struct Pos *next_stink(List *l, int x, int y) {
+  struct l_element *elem = l->tail;
   struct Pos *pos;
 
   while(elem != NULL) {
@@ -201,7 +201,7 @@ void move_pacman() {
   }
 }
 
-void move_ghosts(Queue *q) {
+void move_ghosts(List *q) {
   int i = 0;
   int new_x = 0;
   int new_y = 0;
@@ -275,7 +275,7 @@ void move_ghosts(Queue *q) {
   }
 }
 
-void draw_scene(Queue *q) {
+void draw_scene(List *q) {
   int i, j, x = 0;
   int ghost_printed = 0;
 
@@ -365,10 +365,10 @@ void *keyboard_runner(void *void_ptr) {
 int main() {
   pthread_t keyb_thread;
   int i, j, c = 0;
-  Queue *stink;
+  List *stink;
   struct Pos *p;
 
-  stink = q_create();
+  stink = l_create();
   cur_round = 0;
 
   pos.x = 0;
@@ -480,7 +480,7 @@ int main() {
     clear_scene();
     draw_scene(stink);
 
-    struct Pos *last = get_last(stink);
+    struct Pos *last = l_get_last(stink);
 
     p = (struct Pos *) malloc(sizeof(struct Pos));
     p->x = pacman.x;
@@ -489,11 +489,11 @@ int main() {
     if(last != NULL) {
 
       if(last->x != pacman.x || last->y != pacman.y) {
-        q_shift(stink, p);
+        l_shift(stink, p);
       }
 
     } else {
-      q_shift(stink, p);
+      l_shift(stink, p);
     }
 
     cur_round ++;
@@ -514,7 +514,7 @@ int main() {
 
   // Clean up
   while(stink->size > 0) {
-    struct Pos *cur = q_remove(stink);
+    struct Pos *cur = l_remove(stink);
     free(cur);
   }
 
