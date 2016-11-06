@@ -113,22 +113,29 @@ void test() {
 }
 
 struct Pos *next_stink(Queue *q, int x, int y) {
-  struct Pos *p = NULL;
-  int i = q_size(q);
+  struct q_element *elem = q->tail;
+  struct Pos *pos;
 
-  while(i > 0) {
-    p = get_at(q, i-1);
+  while(elem != NULL) {
+    pos = elem->value;
 
-    if(p == NULL) {
+    if(pos == NULL) {
       return NULL;
     }
 
-    if(p->x == x && p->y == y) {
-      p = get_at(q, i);
-      return p;
+    /* If true, take one step forwards closer to pacman */
+    if(pos->x == x && pos->y == y) {
+      elem = elem->next;
+
+      if(elem == NULL) {
+        return NULL;
+      } else {
+        pos = elem->value;
+        return pos;
+      }
     }
 
-    i --;
+    elem = elem->prev;
   }
 
   return NULL;
@@ -204,6 +211,11 @@ void move_ghosts(Queue *q) {
 
   for(i = 0; i < ghost_count; i++) {
 
+    // Do not move dead ghosts
+    if(ghosts[i].state == 3) {
+      continue;
+    }
+
     new_x = ghosts[i].x;
     new_y = ghosts[i].y;
 
@@ -255,7 +267,6 @@ void move_ghosts(Queue *q) {
 
         ghosts[i].dir = rand() % 4;
       }
-
     } else {
 
       ghosts[i].x = stink_pos->x;
@@ -311,6 +322,7 @@ void draw_scene(Queue *q) {
 
   move_pacman();
   move_ghosts(q);
+
   printf("Score: %d\n", points);
 }
 
@@ -353,10 +365,10 @@ void *keyboard_runner(void *void_ptr) {
 int main() {
   pthread_t keyb_thread;
   int i, j, c = 0;
-  Queue *x;
+  Queue *stink;
   struct Pos *p;
 
-  x = q_create();
+  stink = q_create();
   cur_round = 0;
 
   pos.x = 0;
@@ -383,6 +395,9 @@ int main() {
   // Initialize apples (game state changer)
   food[2][12] = 2;
   food[16][12] = 2;
+  food[10][8] = 2;
+  food[8][8] = 2;
+
 
   run = 1;
   points = 0;
@@ -438,14 +453,10 @@ int main() {
       game_state = 1;
     }
 
-    usleep(250000);
-
-    clear_scene();
-    draw_scene(x);
-
-    for(i=0; i < 4; i ++) {
+    for(i=0; i < ghost_count; i ++) {
       if(ghosts[i].x == pacman.x &&
          ghosts[i].y == pacman.y &&
+         ghosts[i].state != 3 &&
          game_state == 1) {
         run = 0;
         break;
@@ -453,8 +464,9 @@ int main() {
 
       if(ghosts[i].x == pacman.x &&
          ghosts[i].y == pacman.y &&
+         ghosts[i].state != 3 &&
          game_state == 2) {
-        ghosts[i].state = 2;
+        ghosts[i].state = 3;
       }
 
       // quit if all food is eaten
@@ -464,7 +476,11 @@ int main() {
       }
     }
 
-    struct Pos *last = get_last(x);
+    usleep(250000);
+    clear_scene();
+    draw_scene(stink);
+
+    struct Pos *last = get_last(stink);
 
     p = (struct Pos *) malloc(sizeof(struct Pos));
     p->x = pacman.x;
@@ -473,27 +489,32 @@ int main() {
     if(last != NULL) {
 
       if(last->x != pacman.x || last->y != pacman.y) {
-        q_shift(x, p);
+        q_shift(stink, p);
       }
 
     } else {
-      q_shift(x, p);
+      q_shift(stink, p);
     }
 
     cur_round ++;
   }
 
   clear_scene();
+  draw_scene(stink);
 
   // Curses destroy
   refresh();
   endwin();
 
-  printf("Score: %d\n", points);
+  if(points == 32) {
+    printf("You won!!! Score: %d\n", points);
+  } else {
+    printf("You lost... Score: %d\n", points);
+  }
 
   // Clean up
   for(i = 0; i < MIN(50, cur_round); i ++) {
-    p = get_at(x, i);
+    p = get_at(stink, i);
     free(p);
   }
 

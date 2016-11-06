@@ -4,8 +4,21 @@
 typedef struct queue Queue;
 typedef void *Item;
 
-#define MIN_PRIO 10
-#define MAX_PRIO 1
+/*
+ * implementation of a FIFO queue using a linked list
+ * ignore priority argument in add()
+ */
+struct q_element {
+  struct q_element *next;
+  struct q_element *prev;
+  void *value;
+};
+
+struct queue {
+  struct q_element *head;
+  struct q_element *tail;
+  int size;
+};
 
 /*
  * create a Queue that holds Items
@@ -17,7 +30,7 @@ Queue *q_create(void);
  */
 int q_shift(Queue *q, Item i);
 /*
- * add Item to the Queue; 3rd arg is priority in MIN_PRIO..MAX_PRIO;
+ * add Item to the Queue
  * return 1/0 if successful/not-successful
  */
 int q_add(Queue *q, Item i);
@@ -27,8 +40,6 @@ int q_add(Queue *q, Item i);
 Item q_remove(Queue *q);
 
 Item get_at(Queue *q, int i);
-
-Item get_elem(Queue *q);
 
 Item get_last(Queue *q);
 

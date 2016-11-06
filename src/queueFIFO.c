@@ -2,32 +2,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-/*
- * implementation of a FIFO queue using a linked list
- * ignore priority argument in add()
- */
-struct q_element {
-  struct q_element *next;
-  void *value;
-};
-
-struct queue {
-  struct q_element *head;
-  struct q_element *tail;
-};
 
 /*
  * Create a Queue that holds Items.
  * returns NULL if the create call failed (malloc failure)
  */
 Queue *q_create(void) {
-  struct queue *p;
+  struct queue *q;
 
-  if ((p = (struct queue *) malloc(sizeof(struct queue))) != NULL) {
-    p->head = NULL;
-    p->tail = NULL;
+  if ((q = (struct queue *) malloc(sizeof(struct queue))) != NULL) {
+    q->head = NULL;
+    q->tail = NULL;
+    q->size = 0;
   }
-  return p;
+  return q;
 }
 
 /*
@@ -47,17 +35,27 @@ int q_shift(Queue *q, Item i) {
  */
 int q_add(Queue *q, Item i) {
   struct q_element *p;
+  int old_size = q->size;
 
   p = (struct q_element *) malloc(sizeof(struct q_element));
   if (p != NULL) {
     p->value = i;
     p->next = NULL;
+    // If the queue is empty, then don't assign a prev
+    // for the first element
     if (q->head == NULL) {
       q->head = p;
     } else {
       q->tail->next = p;
     }
+
+    if(q->tail == NULL) {
+      p->prev = NULL;
+    } else {
+      p->prev = q->tail;
+    }
     q->tail = p;
+    q->size = old_size + 1;
     return 1;
   }
   return 0;
@@ -68,16 +66,17 @@ int q_add(Queue *q, Item i) {
  */
 Item q_remove(Queue *q) {
   struct q_element *p;
+  int old_size = q->size;
   Item i;
 
   if (q->head == NULL) {
+    q->tail = NULL;
     return NULL;
   }
   p = q->head;
   q->head = p->next;
-  if (q->head == NULL) {
-    q->tail = NULL;
-  }
+  q->head->prev = NULL; /* first should not have prev */
+  q->size = old_size-1;
   i = p->value;
   free(p);
   return i;
@@ -104,18 +103,6 @@ Item get_at(Queue *q, int i) {
   return item;
 }
 
-Item get_elem(Queue *q) {
-  struct q_element *p;
-  Item i;
-
-  if (q->head == NULL) {
-    return NULL;
-  }
-  p = q->head;
-  i = p->value;
-  return i;
-}
-
 Item get_last(Queue *q) {
   struct q_element *p;
   Item i;
@@ -128,17 +115,9 @@ Item get_last(Queue *q) {
   return i;
 }
 
+/* Optimization: Keep the size of the list as an int instead
+ * of iterating over it to find out the size
+ */
 int q_size(Queue *q) {
-  struct q_element *p;
-  int i = 0;
-
-  if(q->head == NULL) {
-    return i;
-  }
-  p = q->head;
-  while(p != NULL) {
-    i ++;
-    p = p->next;
-  }
-  return i;
+  return q->size;
 }
