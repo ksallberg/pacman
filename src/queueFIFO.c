@@ -75,7 +75,9 @@ Item q_remove(Queue *q) {
   }
   p = q->head;
   q->head = p->next;
-  q->head->prev = NULL; /* first should not have prev */
+  if(q->head != NULL) {
+    q->head->prev = NULL; /* first should not have prev */
+  }
   q->size = old_size-1;
   i = p->value;
   free(p);

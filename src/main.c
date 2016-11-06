@@ -513,10 +513,13 @@ int main() {
   }
 
   // Clean up
-  for(i = 0; i < MIN(50, cur_round); i ++) {
-    p = get_at(stink, i);
-    free(p);
+  while(stink->size > 0) {
+    struct Pos *cur = q_remove(stink);
+    free(cur);
   }
+
+  // destroy queue
+  free(stink);
 
   return 0;
 }
