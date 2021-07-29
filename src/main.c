@@ -46,19 +46,10 @@ const int ghost_flee_time = 20;
 #define ANSI_COLOR_RESET  "\x1b[0m"
 
 int run;
-extern int run;
-
 int points;
-extern int points;
-
 int game_state;
-extern int game_state;
-
 int round_at_apple;
-extern int round_at_apple;
-
 int cur_round;
-extern int cur_round;
 
 char *m[] = {"         |         ",
              " ||| ||| | ||| ||| ",
